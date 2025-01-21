@@ -20,7 +20,7 @@ export class UserService {
         return this.users
     }
 
-    getUserById(id: number): User {
+    getUserById(id: Number): User {
         return this.users.find(data => data.id === id)
     }
 

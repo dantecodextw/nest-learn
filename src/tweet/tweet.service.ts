@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { UserService } from 'src/users/users.service';
 
 @Injectable()
 export class TweetService {
+    constructor(private readonly userService: UserService) { }
+
     tweets: { text: String, date: Date, userId: Number }[] = [
         { text: 'Hello world!', date: new Date('2025-01-20'), userId: 1 },
         { text: 'NestJS is great!', date: new Date('2025-01-19'), userId: 2 },
@@ -16,6 +19,15 @@ export class TweetService {
     ];
 
     getTweets(userId: Number) {
-        return this.tweets.filter(data => data.userId === userId)
+        const user = this.userService.getUserById(userId)
+        const tweets = this.tweets.filter(data => data.userId === userId)
+
+        // return {
+        //     tweets,
+        //     author: user.name
+        // }
+        return tweets.map(data => {
+            return { ...data, author: user.name }
+        })
     }
 }
