@@ -1,30 +1,43 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, Inject, forwardRef } from "@nestjs/common"
+import { AuthService } from "src/auth/auth.service"
+import { Repository } from "typeorm"
+import { User } from "./user.entity"
+import { InjectRepository } from "@nestjs/typeorm"
+import { CreateUserDto } from "./dtos/create-user.dto"
 
-export interface User {
-    id: number,
-    name: string,
-    email: string,
-    gender: string,
-    isMarried: boolean
-}
+// export interface User {
+//     id: number,
+//     name: string,
+//     email: string,
+//     gender: string,
+//     password: string,
+//     isMarried: boolean
+// }
 
 @Injectable()
 export class UserService {
-    users: User[] = [
-        { id: 1, name: 'john', email: 'john@gmail.com', gender: 'male', isMarried: false },
-        { id: 2, name: 'Alice', email: 'Alice@gmail.com', gender: 'female', isMarried: true },
-        { id: 3, name: 'Bob', email: 'Bob@gmail.com', gender: 'male', isMarried: false },
-        { id: 4, name: 'Eve', email: 'Eve@gmail.com', gender: 'female', isMarried: true }
-    ]
-    getAllusers(): User[] {
-        return this.users
+    constructor(
+        @InjectRepository(User)
+        private userRepository: Repository<User>
+    ) { }
+
+    getAllusers() {
+        return this.userRepository.find()
     }
 
-    getUserById(id: Number): User {
-        return this.users.find(data => data.id === id)
-    }
+    public async createUser(userDto: CreateUserDto) {
+        // Validate if a user exist with the given email
+        const user = await this.userRepository.findOne({
+            where: { email: userDto.email }
+        })
+        // Handle the error / exception
+        if (user) {
+            return 'The user with the given email alreday exists!'
+        }
+        // Create that user
 
-    createUser(user: User): void {
-        this.users.push(user)
+        let newUser = this.userRepository.create(userDto)
+        newUser = await this.userRepository.save(newUser)
+        return newUser
     }
 }
